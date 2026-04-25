@@ -18,13 +18,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Fetch live prices and update data
+      - name: Fetch live prices and build data file
         run: |
           set -e
           NOW_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           NOW_IST=$(TZ='Asia/Kolkata' date +"%d %b %Y · %H:%M IST")
-          SESSION="$1"
-          if [ "$(TZ='Asia/Kolkata' date +%H)" -lt 12 ]; then
+          IST_HOUR=$(TZ='Asia/Kolkata' date +%H)
+          if [ "$IST_HOUR" -lt 12 ]; then
             SESSION="morning"
             HEADLINE="Morning open prep — overnight COMEX action"
           else
@@ -32,18 +32,15 @@ jobs:
             HEADLINE="NY-session prep — US data window opening"
           fi
 
-          # Fetch USDINR
-          USDINR=$(curl -s "https://open.er-api.com/v6/latest/USD" | python3 -c "import sys,json; print(json.load(sys.stdin)['rates']['INR'])" 2>/dev/null || echo "83.50")
+          USDINR=$(curl -fsS "https://open.er-api.com/v6/latest/USD" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['rates']['INR'])" 2>/dev/null || echo "83.50")
+          GOLD_SPOT=$(curl -fsS "https://api.gold-api.com/price/XAU" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "4800")
+          SILVER_SPOT=$(curl -fsS "https://api.gold-api.com/price/XAG" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "79")
 
-          # Fetch spot gold/silver (best-effort, multiple fallbacks)
-          GOLD_SPOT=$(curl -s "https://api.gold-api.com/price/XAU" | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "0")
-          SILVER_SPOT=$(curl -s "https://api.gold-api.com/price/XAG" | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "0")
+          GOLD_MCX=$(python3 -c "print(round(${GOLD_SPOT} * ${USDINR} / 31.1035 * 10 * 1.03))")
+          SILVER_MCX=$(python3 -c "print(round(${SILVER_SPOT} * ${USDINR} / 31.1035 * 1000 * 1.03))")
+          RATIO=$(python3 -c "print(round((${GOLD_MCX}/10) / (${SILVER_MCX}/1000), 2))")
 
-          # Compute approx MCX prices
-          GOLD_MCX=$(python3 -c "print(round(${GOLD_SPOT} * ${USDINR} / 31.1035 * 10 * 1.03))" 2>/dev/null || echo "153850")
-          SILVER_MCX=$(python3 -c "print(round(${SILVER_SPOT} * ${USDINR} / 31.1035 * 1000 * 1.03))" 2>/dev/null || echo "251000")
-          RATIO=$(python3 -c "print(round((${GOLD_MCX}/10) / (${SILVER_MCX}/1000), 2))" 2>/dev/null || echo "61.5")
-
+          mkdir -p data
           cat > data/latest.json <<EOF
           {
             "updatedAt": "${NOW_UTC}",
@@ -62,21 +59,26 @@ jobs:
           echo "Generated data/latest.json:"
           cat data/latest.json
 
-      - name: Commit and push if changed
+      - name: Commit data update
         run: |
           git config user.name "MCX Refresh Bot"
           git config user.email "bot@mcx-refresh.local"
           if [ -n "$(git status --porcelain)" ]; then
             git add data/latest.json
-            git commit -m "Refresh MCX tips: $(TZ='Asia/Kolkata' date +'%d %b %Y · %H:%M IST')"
+            git commit -m "Refresh MCX tips · $(TZ='Asia/Kolkata' date +'%d %b %Y · %H:%M IST')"
             git push
           else
-            echo "No changes to commit"
+            echo "No data changes — skipping commit"
           fi
 
-      - name: Trigger Netlify deploy
-        if: env.NETLIFY_BUILD_HOOK != ''
+      - name: Deploy to Netlify
         env:
-          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: bb23027e-a4b3-4f8f-8dbf-8f176d5183e7
         run: |
-          curl -X POST -d {} "${NETLIFY_BUILD_HOOK}" || echo "Build hook not set — skipping"
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::warning::NETLIFY_AUTH_TOKEN secret not set — skipping deploy. Add it under Settings > Secrets > Actions."
+            exit 0
+          fi
+          npm install -g netlify-cli@latest --silent
+          netlify deploy --prod --dir=. --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
