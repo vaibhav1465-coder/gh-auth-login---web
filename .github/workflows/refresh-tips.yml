@@ -1,0 +1,82 @@
+name: Refresh MCX Tips
+
+on:
+  schedule:
+    # 09:15 IST = 03:45 UTC (morning, market open)
+    - cron: '45 3 * * *'
+    # 19:00 IST = 13:30 UTC (evening, NY session prep)
+    - cron: '30 13 * * *'
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch live prices and update data
+        run: |
+          set -e
+          NOW_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          NOW_IST=$(TZ='Asia/Kolkata' date +"%d %b %Y · %H:%M IST")
+          SESSION="$1"
+          if [ "$(TZ='Asia/Kolkata' date +%H)" -lt 12 ]; then
+            SESSION="morning"
+            HEADLINE="Morning open prep — overnight COMEX action"
+          else
+            SESSION="evening"
+            HEADLINE="NY-session prep — US data window opening"
+          fi
+
+          # Fetch USDINR
+          USDINR=$(curl -s "https://open.er-api.com/v6/latest/USD" | python3 -c "import sys,json; print(json.load(sys.stdin)['rates']['INR'])" 2>/dev/null || echo "83.50")
+
+          # Fetch spot gold/silver (best-effort, multiple fallbacks)
+          GOLD_SPOT=$(curl -s "https://api.gold-api.com/price/XAU" | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "0")
+          SILVER_SPOT=$(curl -s "https://api.gold-api.com/price/XAG" | python3 -c "import sys,json; print(json.load(sys.stdin).get('price',0))" 2>/dev/null || echo "0")
+
+          # Compute approx MCX prices
+          GOLD_MCX=$(python3 -c "print(round(${GOLD_SPOT} * ${USDINR} / 31.1035 * 10 * 1.03))" 2>/dev/null || echo "153850")
+          SILVER_MCX=$(python3 -c "print(round(${SILVER_SPOT} * ${USDINR} / 31.1035 * 1000 * 1.03))" 2>/dev/null || echo "251000")
+          RATIO=$(python3 -c "print(round((${GOLD_MCX}/10) / (${SILVER_MCX}/1000), 2))" 2>/dev/null || echo "61.5")
+
+          cat > data/latest.json <<EOF
+          {
+            "updatedAt": "${NOW_UTC}",
+            "updatedAtIst": "${NOW_IST}",
+            "session": "${SESSION}",
+            "headline": "${HEADLINE}",
+            "goldMiniMcx": ${GOLD_MCX},
+            "silverMicMcx": ${SILVER_MCX},
+            "goldSpotUsd": ${GOLD_SPOT},
+            "silverSpotUsd": ${SILVER_SPOT},
+            "usdInr": ${USDINR},
+            "ratio": ${RATIO}
+          }
+          EOF
+
+          echo "Generated data/latest.json:"
+          cat data/latest.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "MCX Refresh Bot"
+          git config user.email "bot@mcx-refresh.local"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add data/latest.json
+            git commit -m "Refresh MCX tips: $(TZ='Asia/Kolkata' date +'%d %b %Y · %H:%M IST')"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Trigger Netlify deploy
+        if: env.NETLIFY_BUILD_HOOK != ''
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          curl -X POST -d {} "${NETLIFY_BUILD_HOOK}" || echo "Build hook not set — skipping"

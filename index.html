@@ -1098,6 +1098,33 @@ document.getElementById('silverCmp').addEventListener('input', () => updateSigna
 updateSignal('gold', GOLD_ZONES);
 updateSignal('silver', SILVER_ZONES);
 
+// ===== AUTO-REFRESH FROM GITHUB ACTIONS DATA FILE =====
+// Polls /data/latest.json (updated by GitHub Actions cron 2x daily)
+async function loadDataFile() {
+  try {
+    const r = await fetch('/data/latest.json?t=' + Date.now());
+    if (!r.ok) return;
+    const d = await r.json();
+    const dateEl = document.getElementById('tipsDate');
+    if (dateEl && d.updatedAtIst) {
+      dateEl.textContent = `Auto-refreshed: ${d.updatedAtIst} · ${d.session || ''}`.trim();
+    }
+    // Update calculator inputs from cron data if user hasn't typed
+    const goldEl = document.getElementById('goldCmp');
+    const silverEl = document.getElementById('silverCmp');
+    if (d.goldMiniMcx && goldEl && document.activeElement !== goldEl) {
+      goldEl.value = d.goldMiniMcx;
+      if (typeof updateSignal === 'function') updateSignal('gold', GOLD_ZONES);
+    }
+    if (d.silverMicMcx && silverEl && document.activeElement !== silverEl) {
+      silverEl.value = d.silverMicMcx;
+      if (typeof updateSignal === 'function') updateSignal('silver', SILVER_ZONES);
+    }
+  } catch (e) { /* silent */ }
+}
+loadDataFile();
+setInterval(loadDataFile, 60000); // re-check every 60s in case file updates
+
 // Live clock — every second
 function tickClock() {
   const opts = { timeZone: 'Asia/Kolkata', hour12: false, day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
