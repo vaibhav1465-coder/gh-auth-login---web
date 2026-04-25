@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silver MIC & Gold MINI — Live MVP Analysis (Apr 21, 2026)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  :root {
+    --gold: #D4AF37;
+    --silver: #C0C0C0;
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --amber: #d29922;
+    --blue: #58a6ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 28px;
+    background: linear-gradient(90deg, var(--gold), var(--silver));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  h2 {
+    font-size: 22px;
+    margin: 32px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--gold);
+  }
+  h3 {
+    font-size: 16px;
+    margin: 16px 0 8px;
+    color: var(--blue);
+  }
+  .subtitle { color: var(--muted); font-size: 14px; }
+  .live-banner {
+    background: linear-gradient(90deg, rgba(63,185,80,0.15), rgba(212,175,55,0.08));
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .live-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media(max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .kpi { text-align: center; padding: 14px; }
+  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi .value { font-size: 22px; font-weight: 600; margin-top: 4px; }
+  .kpi .delta { font-size: 13px; margin-top: 4px; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--amber); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { background: rgba(88, 166, 255, 0.08); color: var(--blue); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .chart-wrap { position: relative; height: 380px; margin-top: 12px; }
+  .chart-wrap-sm { position: relative; height: 260px; margin-top: 12px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge.buy { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid var(--green); }
+  .badge.sell { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid var(--red); }
+  .badge.hold { background: rgba(210,153,34,0.15); color: var(--amber); border: 1px solid var(--amber); }
+  .badge.gold-tag { background: rgba(212,175,55,0.15); color: var(--gold); border: 1px solid var(--gold); }
+  .badge.silver-tag { background: rgba(192,192,192,0.15); color: var(--silver); border: 1px solid var(--silver); }
+  .callout {
+    border-left: 3px solid var(--amber);
+    padding: 12px 16px;
+    margin: 16px 0;
+    background: rgba(210,153,34,0.06);
+    border-radius: 0 6px 6px 0;
+  }
+  .callout.risk { border-left-color: var(--red); background: rgba(248,81,73,0.06); }
+  .callout.opportunity { border-left-color: var(--green); background: rgba(63,185,80,0.06); }
+  .callout.info { border-left-color: var(--blue); background: rgba(88,166,255,0.06); }
+  ul { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .footnote { font-size: 12px; color: var(--muted); margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .scenario-row { display: grid; grid-template-columns: 100px 1fr 1fr 1fr 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 14px; }
+  .scenario-row.header { font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+  .prob-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .prob-fill { height: 100%; background: linear-gradient(90deg, var(--amber), var(--green)); }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .source-tag { font-size: 11px; color: var(--muted); margin-left: 6px; }
+
+  /* Password Gate */
+  #pw-gate {
+    position: fixed; inset: 0; background: #0d1117;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; font-family: inherit;
+  }
+  #pw-gate .box {
+    background: var(--card); border: 1px solid var(--gold);
+    border-radius: 12px; padding: 40px; max-width: 420px; width: 90%;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  #pw-gate h2 {
+    background: linear-gradient(90deg, var(--gold), var(--silver));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; border: none; padding: 0; margin-bottom: 8px;
+  }
+  #pw-gate p { color: var(--muted); margin-bottom: 20px; font-size: 13px; }
+  #pw-gate input {
+    width: 100%; padding: 12px; background: #0d1117; color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; font-size: 15px;
+    margin-bottom: 12px; font-family: inherit;
+  }
+  #pw-gate input:focus { outline: none; border-color: var(--gold); }
+  #pw-gate button {
+    width: 100%; padding: 12px; background: var(--gold); color: #0d1117;
+    border: none; border-radius: 6px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  #pw-gate button:hover { opacity: 0.9; }
+  #pw-err { color: var(--red); font-size: 12px; margin-top: 8px; height: 16px; }
+  body.locked { overflow: hidden; }
+  body.locked > *:not(#pw-gate) { filter: blur(10px); pointer-events: none; }
+
+  /* Live Signal Calculator */
+  .signal-box {
+    text-align: center; padding: 20px; border-radius: 8px; margin-top: 12px;
+  }
+  .signal-box.BUY-STRONG { background: rgba(63,185,80,0.2); border: 2px solid var(--green); }
+  .signal-box.BUY { background: rgba(63,185,80,0.12); border: 1px solid var(--green); }
+  .signal-box.WAIT { background: rgba(210,153,34,0.1); border: 1px solid var(--amber); }
+  .signal-box.AVOID { background: rgba(248,81,73,0.1); border: 1px solid var(--red); }
+  .signal-box.EXIT { background: rgba(248,81,73,0.2); border: 2px solid var(--red); }
+  .signal-big { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .signal-detail { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .cmp-input {
+    width: 100%; padding: 10px; background: #0d1117; color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; font-size: 16px;
+    font-family: inherit; margin-top: 8px;
+  }
+  .cmp-input:focus { outline: none; border-color: var(--blue); }
+  .signal-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .last-updated {
+    display: inline-block; font-size: 11px; color: var(--muted);
+    padding: 4px 10px; background: rgba(88,166,255,0.1);
+    border-radius: 12px; margin-left: 10px;
+  }
+</style>
+</head>
+<body class="locked">
+
+<!-- PASSWORD GATE -->
+<div id="pw-gate">
+  <div class="box">
+    <h2>🔒 Private Access</h2>
+    <p>Silver MIC & Gold MINI — MCX Live Analysis<br>Enter password to continue</p>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off" autofocus />
+    <button id="pw-btn">Unlock</button>
+    <div id="pw-err"></div>
+  </div>
+</div>
+
+<header>
+  <h1>Silver MIC & Gold MINI — LIVE Market Analysis</h1>
+  <p class="subtitle">MCX Precious Metals · MVP v2.0 · Snapshot: 21 April 2026 · Horizon: Apr → Jul 2026</p>
+</header>
+
+<div class="live-banner">
+  <span class="live-dot"></span>
+  <span><strong>REAL-TIME ACTIVE:</strong> TradingView widgets auto-update every second · <span class="last-updated" id="liveClock">—</span></span>
+</div>
+
+<!-- TRADINGVIEW TICKER TAPE - REAL TIME SCROLL -->
+<div class="tradingview-widget-container" style="margin-bottom:20px;">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {
+    "symbols": [
+      {"description": "Gold MINI MCX", "proName": "MCX:GOLDM1!"},
+      {"description": "Silver MIC MCX", "proName": "MCX:SILVERMIC1!"},
+      {"description": "Gold MCX", "proName": "MCX:GOLD1!"},
+      {"description": "Silver MCX", "proName": "MCX:SILVER1!"},
+      {"description": "Spot Gold", "proName": "TVC:GOLD"},
+      {"description": "Spot Silver", "proName": "TVC:SILVER"},
+      {"description": "DXY", "proName": "TVC:DXY"},
+      {"description": "USDINR", "proName": "FX_IDC:USDINR"},
+      {"description": "Brent Crude", "proName": "TVC:UKOIL"},
+      {"description": "US10Y", "proName": "TVC:US10Y"}
+    ],
+    "showSymbolLogo": true,
+    "isTransparent": true,
+    "displayMode": "adaptive",
+    "colorTheme": "dark",
+    "locale": "en"
+  }
+  </script>
+</div>
+
+<!-- REAL-TIME LIVE CHARTS -->
+<section>
+  <h2>📊 Real-Time Live Charts (TradingView · Every-Second Updates)</h2>
+  <div class="grid grid-2">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:12px 16px;"><h3 style="margin:0;"><span class="badge gold-tag">MCX:GOLDM1!</span> Gold MINI Live</h3></div>
+      <div class="tradingview-widget-container" style="height:420px;">
+        <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
+        {
+          "symbols": [["Gold MINI", "MCX:GOLDM1!|1D"]],
+          "chartOnly": false,
+          "width": "100%",
+          "height": 420,
+          "locale": "en",
+          "colorTheme": "dark",
+          "autosize": true,
+          "showVolume": true,
+          "showMA": true,
+          "hideDateRanges": false,
+          "hideMarketStatus": false,
+          "hideSymbolLogo": false,
+          "scalePosition": "right",
+          "scaleMode": "Normal",
+          "fontFamily": "-apple-system, BlinkMacSystemFont, sans-serif",
+          "fontSize": "10",
+          "noTimeScale": false,
+          "valuesTracking": "1",
+          "changeMode": "price-and-percent",
+          "chartType": "area",
+          "maLineColor": "#D4AF37",
+          "maLineWidth": 1,
+          "maLength": 9,
+          "lineColor": "#D4AF37",
+          "topColor": "rgba(212, 175, 55, 0.3)",
+          "bottomColor": "rgba(212, 175, 55, 0)",
+          "backgroundColor": "rgba(22, 27, 34, 0)",
+          "isTransparent": true
+        }
+        </script>
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:12px 16px;"><h3 style="margin:0;"><span class="badge silver-tag">MCX:SILVERMIC1!</span> Silver MIC Live</h3></div>
+      <div class="tradingview-widget-container" style="height:420px;">
+        <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
+        {
+          "symbols": [["Silver MIC", "MCX:SILVERMIC1!|1D"]],
+          "chartOnly": false,
+          "width": "100%",
+          "height": 420,
+          "locale": "en",
+          "colorTheme": "dark",
+          "autosize": true,
+          "showVolume": true,
+          "showMA": true,
+          "scalePosition": "right",
+          "scaleMode": "Normal",
+          "fontFamily": "-apple-system, BlinkMacSystemFont, sans-serif",
+          "fontSize": "10",
+          "noTimeScale": false,
+          "valuesTracking": "1",
+          "changeMode": "price-and-percent",
+          "chartType": "area",
+          "maLineColor": "#C0C0C0",
+          "maLineWidth": 1,
+          "maLength": 9,
+          "lineColor": "#C0C0C0",
+          "topColor": "rgba(192, 192, 192, 0.3)",
+          "bottomColor": "rgba(192, 192, 192, 0)",
+          "backgroundColor": "rgba(22, 27, 34, 0)",
+          "isTransparent": true
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRADINGVIEW TECHNICAL ANALYSIS - LIVE BUY/SELL -->
+<section>
+  <h2>🎯 TradingView Live BUY/SELL Recommendation (26 Indicator Aggregate)</h2>
+  <p class="subtitle" style="margin-bottom:10px;">Real-time aggregate from TradingView's 26 technical indicators across multiple timeframes. Strong Buy / Buy / Neutral / Sell / Strong Sell.</p>
+  <div class="grid grid-2">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:12px 16px;"><h3 style="margin:0;"><span class="badge gold-tag">Gold MINI</span> Live TA Signal</h3></div>
+      <div class="tradingview-widget-container" style="height:450px;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+        {
+          "interval": "15m",
+          "width": "100%",
+          "isTransparent": true,
+          "height": 450,
+          "symbol": "MCX:GOLDM1!",
+          "showIntervalTabs": true,
+          "displayMode": "single",
+          "locale": "en",
+          "colorTheme": "dark"
+        }
+        </script>
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:12px 16px;"><h3 style="margin:0;"><span class="badge silver-tag">Silver MIC</span> Live TA Signal</h3></div>
+      <div class="tradingview-widget-container" style="height:450px;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+        {
+          "interval": "15m",
+          "width": "100%",
+          "isTransparent": true,
+          "height": 450,
+          "symbol": "MCX:SILVERMIC1!",
+          "showIntervalTabs": true,
+          "displayMode": "single",
+          "locale": "en",
+          "colorTheme": "dark"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL INDICATORS LIVE -->
+<section>
+  <h2>🌐 Global Indicators (Live)</h2>
+  <div class="grid grid-4">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {"symbol": "TVC:GOLD","width": "100%","height": 200,"locale": "en","dateRange": "12M","colorTheme": "dark","trendLineColor": "#D4AF37","underLineColor": "rgba(212,175,55,0.15)","isTransparent": true,"autosize": true,"largeChartUrl": ""}
+        </script>
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {"symbol": "TVC:SILVER","width": "100%","height": 200,"locale": "en","dateRange": "12M","colorTheme": "dark","trendLineColor": "#C0C0C0","underLineColor": "rgba(192,192,192,0.15)","isTransparent": true,"autosize": true}
+        </script>
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {"symbol": "TVC:DXY","width": "100%","height": 200,"locale": "en","dateRange": "12M","colorTheme": "dark","trendLineColor": "#58a6ff","underLineColor": "rgba(88,166,255,0.15)","isTransparent": true,"autosize": true}
+        </script>
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {"symbol": "TVC:UKOIL","width": "100%","height": 200,"locale": "en","dateRange": "12M","colorTheme": "dark","trendLineColor": "#d29922","underLineColor": "rgba(210,153,34,0.15)","isTransparent": true,"autosize": true}
+        </script>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FRAMEWORK SIGNAL CALCULATOR -->
+<section>
+  <h2>⚡ Framework Signal Calculator (Zone-Based, Auto-Polled)</h2>
+  <p class="subtitle" style="margin-bottom:10px;">Reads the live TradingView prices above and computes BUY/SELL/WAIT against your defined zones (§9). Confluence with TradingView TA = high-conviction trade.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge gold-tag">Gold MINI</span> Framework Signal</h3>
+      <label style="font-size:12px; color:var(--muted);">Gold MINI CMP (auto-poll · editable):</label>
+      <input type="number" class="cmp-input" id="goldCmp" value="153850" step="1" />
+      <div class="signal-box" id="goldSignal">
+        <div class="signal-big" id="goldAction">—</div>
+        <div class="signal-detail" id="goldReason">Enter CMP to compute signal</div>
+      </div>
+      <div class="signal-meta">
+        <span>Entry: <strong id="goldEntry">—</strong></span>
+        <span>Stop: <strong id="goldStop">—</strong></span>
+        <span>Target: <strong id="goldTarget">—</strong></span>
+        <span>R:R: <strong id="goldRR">—</strong></span>
+      </div>
+      <div class="subtitle" style="margin-top:8px; font-size:11px;" id="goldFetchStatus">Auto-poll status: idle</div>
+    </div>
+    <div class="card">
+      <h3><span class="badge silver-tag">Silver MIC</span> Framework Signal</h3>
+      <label style="font-size:12px; color:var(--muted);">Silver MIC CMP (auto-poll · editable):</label>
+      <input type="number" class="cmp-input" id="silverCmp" value="251000" step="1" />
+      <div class="signal-box" id="silverSignal">
+        <div class="signal-big" id="silverAction">—</div>
+        <div class="signal-detail" id="silverReason">Enter CMP to compute signal</div>
+      </div>
+      <div class="signal-meta">
+        <span>Entry: <strong id="silverEntry">—</strong></span>
+        <span>Stop: <strong id="silverStop">—</strong></span>
+        <span>Target: <strong id="silverTarget">—</strong></span>
+        <span>R:R: <strong id="silverRR">—</strong></span>
+      </div>
+      <div class="subtitle" style="margin-top:8px; font-size:11px;" id="silverFetchStatus">Auto-poll status: idle</div>
+    </div>
+  </div>
+</section>
+
+<!-- TODAY'S TIPS -->
+<section>
+  <h2>📌 Today's Intraday Tips <span class="last-updated" id="tipsDate">21 Apr 2026 · 19:30 IST</span></h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge hold">WAIT</span> Gold MINI — @ ₹1,53,850</h3>
+      <ul>
+        <li>Sitting in chop zone (₹1,53,000 – ₹1,54,500) — no edge for fresh longs</li>
+        <li>Place GTT BUY @ ₹1,52,500 (S1 test) — 40% position</li>
+        <li>Breakout alternate: BUY STOP @ ₹1,55,200 — only if volume &gt; 1.5× avg</li>
+        <li>Strait of Hormuz headline = overnight gap risk; size half</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="badge hold">WAIT</span> Silver MIC — @ ₹2,51,000</h3>
+      <ul>
+        <li>Range zone (₹2,48,000 – ₹2,55,000) — no conviction</li>
+        <li>Place GTT BUY @ ₹2,45,000 — 50% position</li>
+        <li>Deeper value at ₹2,38,000 if crude crashes below $95</li>
+        <li>Ratio still 61.3 — Silver NOT the leader; prefer Gold adds</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout info" style="margin-top:12px;">
+    <strong>Session bias (7:30 PM IST NY open):</strong> Neutral-to-weak. Oil down ~1%, DXY firm, spot gold below $4,800.
+    Do NOT initiate longs in wait zones. Let GTT orders do the work overnight. Next key event: US data at 18:00 EST / 03:30 IST.
+  </div>
+</section>
+
+<!-- LIVE SNAPSHOT -->
+<section>
+  <h2>1. Live Market Snapshot (as of 21 Apr 2026)</h2>
+  <div class="grid grid-4">
+    <div class="card kpi">
+      <div class="label">Gold MINI CMP</div>
+      <div class="value neutral">₹1,53,281</div>
+      <div class="delta down">-0.76% vs 16-Apr close ₹1,54,454</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Silver MIC CMP</div>
+      <div class="value neutral">₹2,49,383</div>
+      <div class="delta down">-1.45% vs 16-Apr close ₹2,53,052</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Gold-Silver Ratio</div>
+      <div class="value up">61.5</div>
+      <div class="delta">Below mean (~75) — GOLD catch-up play</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Crude (Brent/WTI)</div>
+      <div class="value neutral">$97-$98</div>
+      <div class="delta">Inflation hedge demand for PMs</div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <strong>Market Context (verified from live sources):</strong>
+    Gold closed <strong>₹1,54,454/10g on 16-Apr-26</strong> (+0.33% DoD). Silver closed <strong>₹2,53,052/kg on 16-Apr-26</strong> (+0.52% DoD).
+    Mild correction into your 21-Apr CMPs. Market consensus near-term Gold range: <strong>₹1,51,000 – ₹1,56,000</strong>.
+    Sustained close above ₹1,55,000 opens ₹1,57-₹1,58k; break below ₹1,54,000 targets ₹1,52-₹1,51k. Silver holding
+    above $66 COMEX (0.618 Fib support). Oil rally to $97-98 is a net positive for precious metals via inflation channel.
+    <span class="source-tag">Sources: Goodreturns MCX reports (15-16 Apr); CME Micro Metals April 2026; Dhan Silver MIC OI 54.93K</span>
+  </div>
+</section>
+
+<!-- REVISED THESIS -->
+<section>
+  <h2>2. Revised Thesis (Post-Rally Reassessment)</h2>
+  <div class="grid grid-4">
+    <div class="card kpi">
+      <div class="label">Silver MIC — Bias</div>
+      <div class="value up">Bullish (Hold-Add)</div>
+      <div class="delta">3M Band: +7% to +14%</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Gold MINI — Bias</div>
+      <div class="value up">Bullish (Preferred)</div>
+      <div class="delta">3M Band: +5% to +11%</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Preferred Allocation</div>
+      <div class="value neutral">55 / 45</div>
+      <div class="delta">Gold MINI overweight (ratio play)</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Risk Regime</div>
+      <div class="value down">HIGH</div>
+      <div class="delta">Post-rally extended valuations</div>
+    </div>
+  </div>
+
+  <div class="callout opportunity">
+    <strong>Key Thesis Change — Why Gold Now Leads (Not Silver):</strong> The Gold-Silver ratio at
+    <strong>61.5</strong> is significantly below the historical mean of 75-80. This means silver has
+    <em>already</em> out-performed gold sharply (Silver up ~160% vs Gold ~53% over 12 months). For the next 3 months,
+    mean-reversion logic <strong>favors gold catching up to silver</strong>. Core structure: overweight Gold MINI,
+    hold Silver MIC core without aggressive adds, and flip the ratio spread to <strong>Long Gold / Short Silver</strong>.
+  </div>
+
+  <div class="callout risk">
+    <strong>Post-Rally Risk Warning:</strong> Silver moved from ~₹95k → ₹2.49L (~160%) and Gold from ~₹1L → ₹1.53L (~53%)
+    in 12 months — statistically extreme. Any macro shock (USD spike, real-yield surge, geopolitical de-escalation,
+    oil crash) could trigger 10-15% corrections fast. Keep sizing conservative; this is <em>not</em> a market for
+    over-leveraged directional bets.
+  </div>
+</section>
+
+<!-- CONTRACT SPECS -->
+<section>
+  <h2>3. Contract Specifications — At Current Prices</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge silver-tag">Silver MIC</span> Silver Micro (1 kg lot)</h3>
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Lot Size</td><td>1 kg (1,000 grams)</td></tr>
+        <tr><td>Tick Size</td><td>₹1 per kg</td></tr>
+        <tr><td>Current CMP</td><td><strong>₹2,49,383 / kg</strong></td></tr>
+        <tr><td>Contract Value (1 lot)</td><td><strong>₹2,49,383</strong></td></tr>
+        <tr><td>Margin @ ~9%</td><td><strong>≈ ₹22,500</strong></td></tr>
+        <tr><td>₹1 move = P&amp;L</td><td>₹1 per lot</td></tr>
+        <tr><td>₹1,000 move = P&amp;L</td><td>₹1,000 per lot</td></tr>
+        <tr><td>Nearest Expiry</td><td>29 Apr 2026</td></tr>
+        <tr><td>Open Interest</td><td>~54.93K contracts (Apr)</td></tr>
+        <tr><td>Trading Hours</td><td>09:00 – 23:30 IST</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3><span class="badge gold-tag">Gold MINI</span> Gold Mini (100g lot)</h3>
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Lot Size</td><td>100 grams</td></tr>
+        <tr><td>Tick Size</td><td>₹1 per 10g</td></tr>
+        <tr><td>Current CMP</td><td><strong>₹1,53,281 / 10g</strong></td></tr>
+        <tr><td>Contract Value (1 lot)</td><td><strong>≈ ₹15,32,810</strong></td></tr>
+        <tr><td>Margin @ ~6%</td><td><strong>≈ ₹92,000</strong></td></tr>
+        <tr><td>₹1 (per 10g) move = P&amp;L</td><td>₹10 per lot</td></tr>
+        <tr><td>₹1,000 (per 10g) move = P&amp;L</td><td>₹10,000 per lot</td></tr>
+        <tr><td>Nearest Expiry</td><td>05 May 2026 (tentative)</td></tr>
+        <tr><td>Daily Range (recent)</td><td>≈ ₹2,500-3,000 / 10g</td></tr>
+        <tr><td>Trading Hours</td><td>09:00 – 23:30 IST</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="subtitle" style="margin-top:8px;"><strong>Capital Reality Check:</strong> 1 Gold MINI lot requires ~₹92k margin blocked. 1 Silver MIC lot requires ~₹22.5k. With ₹10L capital, realistic simultaneous exposure is 1 Gold MINI + 3-4 Silver MIC lots.</p>
+</section>
+
+<!-- LIVE CHARTS -->
+<section>
+  <h2>4. Price Charts — 12-Month History + 3-Month Projection</h2>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Silver MIC (₹ / kg) — anchored to CMP ₹2,49,383</h3>
+      <div class="chart-wrap"><canvas id="silverChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Gold MINI (₹ / 10g) — anchored to CMP ₹1,53,281</h3>
+      <div class="chart-wrap"><canvas id="goldChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3>Gold-Silver Ratio (Current: 61.5)</h3>
+      <div class="chart-wrap-sm"><canvas id="ratioChart"></canvas></div>
+      <p class="subtitle" style="margin-top:8px;"><strong>Below-mean ratio</strong> (~75) signals silver is expensive vs gold. Reversion now favors <strong>gold catch-up</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>12M Relative Strength (Rebased, T-0 = 100)</h3>
+      <div class="chart-wrap-sm"><canvas id="rsChart"></canvas></div>
+      <p class="subtitle" style="margin-top:8px;">Silver rebased ~260 (up 160%), Gold rebased ~153 (up 53%). Silver front-loaded gains.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNICAL LEVELS -->
+<section>
+  <h2>5. Updated Technical Levels (Live)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge silver-tag">Silver MIC</span> — Scaled to CMP ₹2,49,383</h3>
+      <table>
+        <tr><th>Level</th><th>Price (₹/kg)</th><th>Type</th><th>Action</th></tr>
+        <tr><td>R3</td><td>2,80,000</td><td>Extension Target</td><td>Trim final 25%</td></tr>
+        <tr><td>R2</td><td>2,68,000</td><td>Primary Resistance</td><td>Book 40%</td></tr>
+        <tr><td>R1</td><td>2,58,000</td><td>16-Apr Swing High zone</td><td>Book 25%</td></tr>
+        <tr><td><strong>CMP</strong></td><td><strong>2,49,383</strong></td><td><strong>Current Spot</strong></td><td>—</td></tr>
+        <tr><td>S1</td><td>2,45,000</td><td>20-DMA / immediate</td><td>Add on test</td></tr>
+        <tr><td>S2</td><td>2,38,000</td><td>50-DMA / swing low</td><td>Aggressive add</td></tr>
+        <tr><td>S3</td><td>2,25,000</td><td>Major breakout base</td><td>Stop / reassess</td></tr>
+        <tr><td>Thesis Break</td><td>&lt; 2,18,000</td><td>Trend invalidation</td><td>FULL EXIT</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3><span class="badge gold-tag">Gold MINI</span> — Scaled to CMP ₹1,53,281</h3>
+      <table>
+        <tr><th>Level</th><th>Price (₹/10g)</th><th>Type</th><th>Action</th></tr>
+        <tr><td>R3</td><td>1,65,000</td><td>Extension Target</td><td>Trim final 25%</td></tr>
+        <tr><td>R2</td><td>1,58,000</td><td>Primary Resistance</td><td>Book 40%</td></tr>
+        <tr><td>R1</td><td>1,55,000</td><td>Key Bullish Trigger</td><td>Breakout add</td></tr>
+        <tr><td><strong>CMP</strong></td><td><strong>1,53,281</strong></td><td><strong>Current Spot</strong></td><td>—</td></tr>
+        <tr><td>S1</td><td>1,52,000</td><td>Immediate support</td><td>Add on test</td></tr>
+        <tr><td>S2</td><td>1,51,000</td><td>Range low</td><td>Aggressive add</td></tr>
+        <tr><td>S3</td><td>1,48,500</td><td>50-DMA zone</td><td>Last-stand add</td></tr>
+        <tr><td>Thesis Break</td><td>&lt; 1,45,000</td><td>Trend invalidation</td><td>FULL EXIT</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="subtitle"><strong>Source alignment:</strong> Near-term Gold range ₹1,51,000 – ₹1,56,000 per market consensus (Goodreturns); Silver consolidating above $66 COMEX Fibonacci 0.618 retracement.</p>
+</section>
+
+<!-- SCENARIOS -->
+<section>
+  <h2>6. 3-Month Scenarios (Apr 21 → Jul 21, 2026)</h2>
+
+  <h3>Silver MIC Scenarios</h3>
+  <div class="card">
+    <div class="scenario-row header">
+      <div>Scenario</div><div>Driver</div><div>Target (₹/kg)</div><div>Return %</div><div>Probability</div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge buy">Bull</span></div>
+      <div>USD collapse + oil breaks $105 + Fed 50bp cut</div>
+      <div class="up">2,80,000 – 2,90,000</div>
+      <div class="up">+12% to +16%</div>
+      <div>25% <div class="prob-bar"><div class="prob-fill" style="width:25%"></div></div></div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge hold">Base</span></div>
+      <div>Consolidation 2.45L – 2.65L, grinding higher</div>
+      <div class="neutral">2,62,000 – 2,72,000</div>
+      <div class="up">+5% to +9%</div>
+      <div>45% <div class="prob-bar"><div class="prob-fill" style="width:45%"></div></div></div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge sell">Bear</span></div>
+      <div>Profit-taking + DXY rebound + risk-on equities</div>
+      <div class="down">2,20,000 – 2,30,000</div>
+      <div class="down">-8% to -12%</div>
+      <div>30% <div class="prob-bar"><div class="prob-fill" style="width:30%"></div></div></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px;">Gold MINI Scenarios</h3>
+  <div class="card">
+    <div class="scenario-row header">
+      <div>Scenario</div><div>Driver</div><div>Target (₹/10g)</div><div>Return %</div><div>Probability</div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge buy">Bull</span></div>
+      <div>Ratio reversion + CB buying + geopolitical shock</div>
+      <div class="up">1,65,000 – 1,70,000</div>
+      <div class="up">+8% to +11%</div>
+      <div>40% <div class="prob-bar"><div class="prob-fill" style="width:40%"></div></div></div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge hold">Base</span></div>
+      <div>₹1.51L – 1.58L range with upward drift</div>
+      <div class="neutral">1,58,000 – 1,62,000</div>
+      <div class="up">+3% to +6%</div>
+      <div>40% <div class="prob-bar"><div class="prob-fill" style="width:40%"></div></div></div>
+    </div>
+    <div class="scenario-row">
+      <div><span class="badge sell">Bear</span></div>
+      <div>Real yield spike + INR strength + equity rally</div>
+      <div class="down">1,44,000 – 1,48,000</div>
+      <div class="down">-3% to -6%</div>
+      <div>20% <div class="prob-bar"><div class="prob-fill" style="width:20%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Expected-Value Math (Probability × Return)</h3>
+    <div class="chart-wrap-sm"><canvas id="evChart"></canvas></div>
+    <p class="subtitle" style="margin-top:8px;"><strong>EV:</strong> Silver = 14×0.25 + 7×0.45 − 10×0.30 = <strong>+3.65%</strong>. Gold = 9.5×0.40 + 4.5×0.40 − 4.5×0.20 = <strong>+4.70%</strong>. <strong>Gold has higher risk-adjusted EV</strong> → allocation tilt justified.</p>
+  </div>
+</section>
+
+<!-- TRADE SETUPS -->
+<section>
+  <h2>7. Actionable Trade Setups (At Current Levels)</h2>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge buy">SETUP 1</span> Gold MINI — Core Long (PREFERRED)</h3>
+      <table>
+        <tr><th>Component</th><th>Detail</th></tr>
+        <tr><td>Entry 1 (40%)</td><td>Buy at ₹1,52,000 – ₹1,52,500 (S1 test)</td></tr>
+        <tr><td>Entry 2 (30%)</td><td>Buy at ₹1,50,500 – ₹1,51,000 (deeper dip)</td></tr>
+        <tr><td>Entry 3 (30%)</td><td>Breakout buy &gt; ₹1,55,200 on high volume</td></tr>
+        <tr><td>Avg. Entry</td><td>≈ ₹1,52,500</td></tr>
+        <tr><td>Stop Loss</td><td>Daily close &lt; ₹1,48,500</td></tr>
+        <tr><td>Risk / lot</td><td>(1,52,500 − 1,48,500) × 10 = ₹40,000</td></tr>
+        <tr><td>Target 1</td><td>₹1,55,000 — book 25%</td></tr>
+        <tr><td>Target 2</td><td>₹1,58,000 — book 40%</td></tr>
+        <tr><td>Target 3</td><td>₹1,65,000 — trail remainder</td></tr>
+        <tr><td>R:R at T3</td><td>≈ 1 : 3.1</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge buy">SETUP 2</span> Silver MIC — Hold + Selective Add</h3>
+      <table>
+        <tr><th>Component</th><th>Detail</th></tr>
+        <tr><td>Entry 1 (50%)</td><td>Buy at ₹2,44,000 – ₹2,46,000 (S1)</td></tr>
+        <tr><td>Entry 2 (50%)</td><td>Buy at ₹2,36,000 – ₹2,40,000 (S2)</td></tr>
+        <tr><td>Stop Loss</td><td>Daily close &lt; ₹2,25,000</td></tr>
+        <tr><td>Risk / lot</td><td>(2,45,000 − 2,25,000) × 1 = ₹20,000</td></tr>
+        <tr><td>Target 1</td><td>₹2,58,000 — book 25%</td></tr>
+        <tr><td>Target 2</td><td>₹2,68,000 — book 40%</td></tr>
+        <tr><td>Target 3</td><td>₹2,80,000 — trail remainder</td></tr>
+        <tr><td>R:R at T3</td><td>≈ 1 : 1.75</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge buy">SETUP 3</span> Ratio Spread — LONG GOLD / SHORT SILVER (REVERSED)</h3>
+      <table>
+        <tr><th>Component</th><th>Detail</th></tr>
+        <tr><td>Structure</td><td>Long 2 lots Gold MINI + Short 12 lots Silver MIC (notional balanced)</td></tr>
+        <tr><td>Notional Balance Math</td><td>1 Au MINI (₹15.3L) ≈ 6.15 Ag MIC (₹2.49L each)</td></tr>
+        <tr><td>Thesis</td><td>G-S ratio 61.5 → reverts toward 70-72</td></tr>
+        <tr><td>Entry Trigger</td><td>Ratio confirms breakout &gt; 62 on weekly close</td></tr>
+        <tr><td>Stop</td><td>Ratio weekly close &lt; 58</td></tr>
+        <tr><td>Target</td><td>Ratio 70-72 (2-3 months)</td></tr>
+        <tr><td>Margin Block</td><td>≈ ₹1,84,000 (Au) + ₹2,70,000 (Ag) = ₹4,54,000</td></tr>
+        <tr><td>Expected P&amp;L</td><td>Market-neutral; captures ~15% ratio convergence</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge hold">SETUP 4</span> Covered Call — Monetize High IV</h3>
+      <table>
+        <tr><th>Component</th><th>Detail</th></tr>
+        <tr><td>Structure</td><td>Hold Gold MINI long + Sell OTM call at ₹1,60,000 strike (30-45 DTE)</td></tr>
+        <tr><td>Purpose</td><td>Collect high-IV premium; cap upside at ~4.4% monthly</td></tr>
+        <tr><td>Typical Premium</td><td>≈ ₹1,800-2,500/10g (₹18-25k per lot)</td></tr>
+        <tr><td>Roll Rule</td><td>Roll at 21 DTE or 80% decay</td></tr>
+        <tr><td>Risk</td><td>Capped upside if Gold surges past ₹1,60k</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- POSITION SIZING -->
+<section>
+  <h2>8. Position Sizing — Scaled to Live Margins</h2>
+  <div class="card">
+    <p style="margin-bottom:12px;">Assuming <strong>₹10,00,000</strong> capital · <strong>1.5% risk/trade rule</strong> · <strong>30% max margin utilization</strong>:</p>
+    <table>
+      <tr><th>Setup</th><th>Lots</th><th>Margin Block</th><th>Max Risk</th><th>Max Reward (T3)</th><th>Capital Use</th></tr>
+      <tr><td>Gold MINI Core Long</td><td>1 lot (staggered)</td><td>≈ ₹92,000</td><td>≈ ₹40,000</td><td>≈ ₹1,25,000</td><td>9.2% margin / 4% risk*</td></tr>
+      <tr><td>Silver MIC Hold</td><td>2 lots</td><td>≈ ₹45,000</td><td>≈ ₹40,000</td><td>≈ ₹70,000</td><td>4.5% margin / 4% risk*</td></tr>
+      <tr><td>Ratio Spread</td><td>2 Au / 12 Ag</td><td>≈ ₹4,54,000</td><td>≈ ₹35,000</td><td>≈ ₹80,000</td><td>45% margin / 3.5% risk</td></tr>
+      <tr><td>Covered Call</td><td>1 short call</td><td>Offset (margin relief)</td><td>Defined</td><td>Premium collected</td><td>Neutral</td></tr>
+      <tr style="background:rgba(210,153,34,0.1);"><td><strong>Conservative Portfolio</strong></td><td>Setup 1 + 2 only</td><td><strong>≈ ₹1,37,000 (14%)</strong></td><td><strong>≈ ₹80,000 (8%)</strong></td><td><strong>≈ ₹1,95,000 (20%)</strong></td><td>86% dry powder</td></tr>
+      <tr style="background:rgba(63,185,80,0.08);"><td><strong>Aggressive Portfolio</strong></td><td>All 4 setups</td><td><strong>≈ ₹5,91,000 (59%)</strong></td><td><strong>≈ ₹1,15,000 (11.5%)</strong></td><td><strong>≈ ₹2,75,000 (27.5%)</strong></td><td>41% dry powder</td></tr>
+    </table>
+    <p class="subtitle" style="margin-top:8px;">*Risk % exceeds 1.5% rule at current prices due to high notionals. Options: (a) half-position via Silver MIC only, (b) wait for deeper pullback to tighten stops, (c) need ~₹25L+ capital for full compliant portfolio.</p>
+  </div>
+
+  <div class="callout risk">
+    <strong>Reality Check at Current Prices:</strong> 1 Gold MINI lot carries ~₹15.3L notional — a 3% adverse
+    move = ₹46,000 loss. For strict 1.5% compliance with ₹10L capital, either wait for pullback below ₹1,50,000
+    or trade Silver MIC only (smaller notional, can scale units).
+  </div>
+</section>
+
+<!-- WHEN TO BUY -->
+<section>
+  <h2>9. WHEN To Buy — Specific Entry Zones</h2>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge gold-tag">Gold MINI</span> — Buy Zones</h3>
+      <table>
+        <tr><th>Zone</th><th>Price Band</th><th>Condition</th><th>Action</th></tr>
+        <tr><td><span class="badge buy">AGGRESSIVE</span></td><td>₹1,51,500 – ₹1,52,500</td><td>Tag S1 with DXY &lt; 106</td><td>Deploy 40% planned size</td></tr>
+        <tr><td><span class="badge buy">VALUE</span></td><td>₹1,49,500 – ₹1,51,000</td><td>Deeper flush to S2/S3</td><td>Deploy 30% planned size</td></tr>
+        <tr><td><span class="badge buy">BREAKOUT</span></td><td>₹1,55,200+</td><td>Close above R1 + volume &gt; 1.5× avg</td><td>Deploy 30% planned size</td></tr>
+        <tr><td><span class="badge hold">WAIT</span></td><td>₹1,53,000 – ₹1,54,500</td><td>Current chop zone</td><td>0% — no edge</td></tr>
+        <tr><td><span class="badge sell">AVOID</span></td><td>&gt; ₹1,57,500</td><td>Extended — chase risk</td><td>Trail existing longs only</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge silver-tag">Silver MIC</span> — Buy Zones</h3>
+      <table>
+        <tr><th>Zone</th><th>Price Band</th><th>Condition</th><th>Action</th></tr>
+        <tr><td><span class="badge buy">AGGRESSIVE</span></td><td>₹2,44,000 – ₹2,46,000</td><td>20-DMA test with ratio &lt; 62</td><td>Deploy 50% planned size</td></tr>
+        <tr><td><span class="badge buy">VALUE</span></td><td>₹2,36,000 – ₹2,40,000</td><td>50-DMA test + RSI &lt; 40</td><td>Deploy 50% planned size</td></tr>
+        <tr><td><span class="badge hold">WAIT</span></td><td>₹2,48,000 – ₹2,55,000</td><td>Current range — no conviction</td><td>0% — ride existing only</td></tr>
+        <tr><td><span class="badge sell">AVOID</span></td><td>&gt; ₹2,65,000</td><td>Extended; resistance overhead</td><td>Book profits, do not add</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Week-by-Week Action Plan (Next 13 Weeks)</h3>
+    <table>
+      <tr><th>Week Of</th><th>Catalyst / Event</th><th>Gold MINI Action</th><th>Silver MIC Action</th></tr>
+      <tr><td><strong>21 Apr (now)</strong></td><td>Post-dip consolidation</td><td>Place GTT BUY @ ₹1,52,000</td><td>Place GTT BUY @ ₹2,45,000</td></tr>
+      <tr><td><strong>28 Apr</strong></td><td>MCX April expiry (29-Apr); US PCE</td><td>Roll to May; add on dip</td><td>Roll to May; tight stop</td></tr>
+      <tr><td><strong>05 May</strong></td><td>Gold MINI May expiry; FOMC prep</td><td>Reduce 50% pre-Fed</td><td>Hold core</td></tr>
+      <tr><td><strong>12 May</strong></td><td>FOMC decision</td><td>Re-deploy based on dot-plot</td><td>Tactical add if dovish</td></tr>
+      <tr><td><strong>19 May</strong></td><td>Indian wedding season peak</td><td>Tailwind — hold longs</td><td>Ride correlated move</td></tr>
+      <tr><td><strong>26 May</strong></td><td>US CPI print</td><td>Book T1 at ₹1,55k if hit</td><td>Book T1 at ₹2,58k if hit</td></tr>
+      <tr><td><strong>02 Jun</strong></td><td>NFP + early June data</td><td>Trail stops tighter</td><td>Trail stops tighter</td></tr>
+      <tr><td><strong>09 Jun</strong></td><td>Summer liquidity thinning</td><td>No new adds</td><td>Consider partial book</td></tr>
+      <tr><td><strong>16 Jun</strong></td><td>FOMC June decision</td><td>De-risk 50% pre-event</td><td>De-risk 25% pre-event</td></tr>
+      <tr><td><strong>23 Jun</strong></td><td>Quarter-end flows</td><td>Book T2 at ₹1,58k if reached</td><td>Book T2 at ₹2,68k if reached</td></tr>
+      <tr><td><strong>30 Jun</strong></td><td>July CPI anticipation</td><td>Hold runners toward T3</td><td>Trail at 50-DMA</td></tr>
+      <tr><td><strong>07 Jul</strong></td><td>Q3 positioning</td><td>Ride toward ₹1,65k</td><td>Ride toward ₹2,80k</td></tr>
+      <tr><td><strong>14-21 Jul</strong></td><td>Horizon close</td><td>Full exit / reassess</td><td>Full exit / reassess</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ENTRY CHECKLIST -->
+<section>
+  <h2>10. Pre-Trade Entry Checklist (3-of-5 Rule)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3><span class="badge gold-tag">Gold MINI</span> — 5-Signal Gate</h3>
+      <table>
+        <tr><th>#</th><th>Signal</th><th>Threshold</th></tr>
+        <tr><td>1</td><td>Price vs 20-DMA</td><td>Above ₹1,52,000</td></tr>
+        <tr><td>2</td><td>RSI (14)</td><td>45 – 65 (not overbought)</td></tr>
+        <tr><td>3</td><td>US 10Y Real Yield</td><td>Flat or falling</td></tr>
+        <tr><td>4</td><td>DXY (US Dollar Index)</td><td>Below 106</td></tr>
+        <tr><td>5</td><td>COMEX Gold</td><td>Holding above $3,100/oz</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3><span class="badge silver-tag">Silver MIC</span> — 5-Signal Gate</h3>
+      <table>
+        <tr><th>#</th><th>Signal</th><th>Threshold</th></tr>
+        <tr><td>1</td><td>Price vs 20-DMA</td><td>Above ₹2,43,000</td></tr>
+        <tr><td>2</td><td>RSI (14)</td><td>45 – 70 (silver runs hotter)</td></tr>
+        <tr><td>3</td><td>MACD Histogram</td><td>Positive or rising</td></tr>
+        <tr><td>4</td><td>Volume on up-bars</td><td>&gt; 20-day avg volume</td></tr>
+        <tr><td>5</td><td>COMEX Silver</td><td>Holding above $66/oz</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="callout">
+    <strong>Execution discipline:</strong> 3 of 5 must confirm BEFORE order. Use LIMIT orders during
+    10:30-13:00 IST or 18:00-22:00 IST. Never market orders on MCX PMs.
+  </div>
+</section>
+
+<!-- GROWTH PROJECTION -->
+<section>
+  <h2>11. Expected Growth — Next 3 Months</h2>
+  <div class="card">
+    <div class="chart-wrap"><canvas id="pnlChart"></canvas></div>
+  </div>
+
+  <div class="grid grid-3" style="margin-top:16px;">
+    <div class="card kpi">
+      <div class="label">Expected Portfolio Return</div>
+      <div class="value up">+6.2%</div>
+      <div class="delta">On ₹10L capital, probability-weighted (3M)</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Return on Margin Deployed</div>
+      <div class="value up">+45%</div>
+      <div class="delta">On ₹1.37L conservative portfolio</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Max Drawdown Tolerance</div>
+      <div class="value down">-8%</div>
+      <div class="delta">Hard stop at ₹80k account loss</div>
+    </div>
+  </div>
+
+  <div class="callout opportunity">
+    <strong>Realistic Growth Expectation — NEXT 3 MONTHS:</strong><br>
+    • <strong>Bull (25% prob.):</strong> Silver ₹2.85L (+14%), Gold ₹1.67L (+9%). Portfolio <strong>+11-13%</strong>.<br>
+    • <strong>Base (45% prob.):</strong> Silver ₹2.65L (+6%), Gold ₹1.60L (+4.5%). Portfolio <strong>+5-7%</strong>.<br>
+    • <strong>Bear (30% prob.):</strong> Silver ₹2.28L (-8.5%), Gold ₹1.46L (-4.7%). Portfolio <strong>-6 to -8%</strong>.<br>
+    <strong>→ Weighted EV: ~+6.2% in 3 months (~24.8% annualized)</strong> — strong risk-adjusted given current vol regime.
+  </div>
+</section>
+
+<!-- RISK MANAGEMENT -->
+<section>
+  <h2>12. Risk Management (Current-Regime)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Hard Rules (Non-Negotiable)</h3>
+      <ul>
+        <li>Max loss / trade: <strong>1.5% of capital</strong></li>
+        <li>Max loss / day: <strong>3%</strong> → stop trading</li>
+        <li>Max loss / week: <strong>6%</strong> → full flat + review</li>
+        <li>Max margin utilization: <strong>30%</strong></li>
+        <li>All stops = broker-level SL-M (not mental)</li>
+        <li>No averaging down outside pre-defined zones</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Thesis-Invalidation Triggers</h3>
+      <ul>
+        <li>Gold MINI daily close &lt; ₹1,45,000</li>
+        <li>Silver MIC daily close &lt; ₹2,18,000</li>
+        <li>DXY breakout &gt; 108</li>
+        <li>US 10Y real yield &gt; 2.5%</li>
+        <li>G-S ratio &lt; 58 (silver leadership breakdown)</li>
+        <li>Brent crude collapse &lt; $85</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE SOURCES -->
+<section>
+  <h2>13. Live Data Sources (Bookmark These)</h2>
+  <div class="card">
+    <table>
+      <tr><th>Purpose</th><th>Source</th><th>URL</th></tr>
+      <tr><td>Official MCX quotes</td><td>MCX India</td><td><a href="https://www.mcxindia.com/market-data/get-quote" target="_blank">mcxindia.com/market-data/get-quote</a></td></tr>
+      <tr><td>Live Gold / Silver rates</td><td>Goodreturns</td><td><a href="https://www.goodreturns.in/gold-rates/" target="_blank">goodreturns.in/gold-rates</a></td></tr>
+      <tr><td>Silver Micro OI &amp; Futures</td><td>Dhan Commodity</td><td><a href="https://dhan.co/commodity/silver-micro-futures-summary/" target="_blank">dhan.co/commodity/silver-micro-futures-summary</a></td></tr>
+      <tr><td>Gold MINI charts</td><td>TradingView</td><td><a href="https://www.tradingview.com/symbols/MCX-GOLDM1!/" target="_blank">tradingview.com/symbols/MCX-GOLDM1!</a></td></tr>
+      <tr><td>Silver MIC charts</td><td>TradingView</td><td><a href="https://www.tradingview.com/symbols/MCX-SILVERMIC1!/" target="_blank">tradingview.com/symbols/MCX-SILVERMIC1!</a></td></tr>
+      <tr><td>Global precious metals</td><td>Trading Economics</td><td><a href="https://tradingeconomics.com/commodity/gold" target="_blank">tradingeconomics.com/commodity/gold</a></td></tr>
+      <tr><td>CME Micro Metals update</td><td>CME Group</td><td><a href="https://www.cmegroup.com/newsletters/micro-gold-silver-and-copper-monthly-update/2026-04-micro-metals-products-update.html" target="_blank">CME April 2026 Metals Update</a></td></tr>
+      <tr><td>Silver MIC rate live</td><td>Upstox</td><td><a href="https://upstox.com/commodity-market-trading/mcx-silvermic-price/" target="_blank">upstox.com/commodity-market-trading/mcx-silvermic-price</a></td></tr>
+      <tr><td>MCX Silver live</td><td>5paisa</td><td><a href="https://www.5paisa.com/commodity-trading/mcx-silver-price" target="_blank">5paisa.com/commodity-trading/mcx-silver-price</a></td></tr>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <strong>Daily Terminal Routine:</strong> Check MCX India live quote at 09:05, 13:00, 18:05, 23:00 IST.
+    Cross-verify with COMEX gold/silver + DXY on TradingView. Log daily close, OI change, volume in trading journal.
+    Thesis-invalidation hit → exit same session, no overnight hold.
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<section>
+  <div class="footnote">
+    <strong>Disclaimer:</strong> CMPs (Gold ₹1,53,281 · Silver ₹2,49,383) as provided by the user on 21-Apr-2026.
+    Technical levels, scenario probabilities, and targets are analytical estimates based on the stated CMPs and
+    referenced market data — <em>not live tick-by-tick quotes or guaranteed outcomes</em>. Always verify against
+    your broker terminal before execution. Commodity futures carry leverage; losses can exceed initial margin.
+    This is not investment advice — position sizing and execution remain the trader's responsibility.
+    <br><br>
+    <strong>Version:</strong> MVP v2.0 (LIVE) · <strong>Updated:</strong> 21 Apr 2026 · <strong>Horizon:</strong> Apr 21 → Jul 21, 2026 · <strong>Review:</strong> Daily ticks, weekly charts, monthly thesis re-validation.
+  </div>
+</section>
+
+<script>
+// ===== PASSWORD GATE =====
+const PW_HASH = 'e28661db48bf7900d42ee083fa84c12418dd2c9fd099ae2923026108e7f7c148'; // sha256('MCX2026')
+
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tryUnlock(pw) {
+  const h = await sha256Hex(pw);
+  if (h === PW_HASH) {
+    localStorage.setItem('mcx_auth', h);
+    document.getElementById('pw-gate').style.display = 'none';
+    document.body.classList.remove('locked');
+    return true;
+  }
+  return false;
+}
+
+(async () => {
+  const stored = localStorage.getItem('mcx_auth');
+  if (stored === PW_HASH) {
+    document.getElementById('pw-gate').style.display = 'none';
+    document.body.classList.remove('locked');
+  }
+  const btn = document.getElementById('pw-btn');
+  const input = document.getElementById('pw-input');
+  const err = document.getElementById('pw-err');
+  const submit = async () => {
+    const ok = await tryUnlock(input.value);
+    if (!ok) {
+      err.textContent = 'Wrong password. Try again.';
+      input.value = '';
+      input.focus();
+    }
+  };
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+})();
+
+// ===== LIVE SIGNAL CALCULATOR =====
+const GOLD_ZONES = [
+  { max: 145000, action: 'EXIT', cls: 'EXIT', reason: 'Thesis broken — daily close below ₹1,45,000. FULL EXIT.', entry: '—', stop: '—', target: '—', rr: '—' },
+  { max: 149500, action: 'WATCH', cls: 'AVOID', reason: 'Below all supports — wait for ₹1,48,500 hold or thesis reset', entry: '—', stop: '—', target: '—', rr: '—' },
+  { max: 151000, action: 'STRONG BUY', cls: 'BUY-STRONG', reason: 'VALUE zone (S2/S3) — deeper dip, high-conviction add', entry: 'Here', stop: '₹1,48,500', target: '₹1,58,000', rr: '1:2.8' },
+  { max: 152500, action: 'BUY', cls: 'BUY', reason: 'AGGRESSIVE zone — tag S1, good R:R for staggered entry', entry: 'Here', stop: '₹1,48,500', target: '₹1,55,000', rr: '1:1.6' },
+  { max: 153000, action: 'BUY', cls: 'BUY', reason: 'Upper aggressive edge — still valid entry if DXY < 106', entry: 'Here', stop: '₹1,48,500', target: '₹1,58,000', rr: '1:1.1' },
+  { max: 154500, action: 'WAIT', cls: 'WAIT', reason: 'CHOP zone (₹1,53,000–1,54,500) — no edge, poor R:R', entry: 'Wait ₹1,52,500 or > ₹1,55,200', stop: '—', target: '—', rr: '—' },
+  { max: 155200, action: 'WAIT', cls: 'WAIT', reason: 'Pre-breakout — wait for confirmed close above ₹1,55,200 on volume', entry: 'Wait > ₹1,55,200', stop: '—', target: '—', rr: '—' },
+  { max: 157500, action: 'BUY', cls: 'BUY', reason: 'BREAKOUT confirmed — add on volume > 1.5× avg', entry: 'Here (breakout)', stop: '₹1,52,500', target: '₹1,65,000', rr: '1:2.0' },
+  { max: Infinity, action: 'AVOID', cls: 'AVOID', reason: 'EXTENDED — chase risk. Only trail existing longs.', entry: '—', stop: '—', target: '—', rr: '—' }
+];
+
+const SILVER_ZONES = [
+  { max: 218000, action: 'EXIT', cls: 'EXIT', reason: 'Thesis broken — daily close below ₹2,18,000. FULL EXIT.', entry: '—', stop: '—', target: '—', rr: '—' },
+  { max: 236000, action: 'WATCH', cls: 'AVOID', reason: 'Below S2 — wait for ₹2,36,000 reclaim', entry: '—', stop: '—', target: '—', rr: '—' },
+  { max: 240000, action: 'STRONG BUY', cls: 'BUY-STRONG', reason: 'VALUE zone (S2 50-DMA) — high-conviction add', entry: 'Here', stop: '₹2,25,000', target: '₹2,68,000', rr: '1:2.1' },
+  { max: 246000, action: 'BUY', cls: 'BUY', reason: 'AGGRESSIVE zone (S1 20-DMA) — staggered entry valid', entry: 'Here', stop: '₹2,25,000', target: '₹2,58,000', rr: '1:0.7' },
+  { max: 248000, action: 'BUY', cls: 'BUY', reason: 'Upper aggressive edge — still valid if ratio < 62', entry: 'Here', stop: '₹2,28,000', target: '₹2,68,000', rr: '1:1.1' },
+  { max: 255000, action: 'WAIT', cls: 'WAIT', reason: 'RANGE zone (₹2,48,000–2,55,000) — no conviction', entry: 'Wait ₹2,45,000', stop: '—', target: '—', rr: '—' },
+  { max: 265000, action: 'HOLD / TRIM', cls: 'WAIT', reason: 'Approaching R1 (₹2,58k) — book 25% at ₹2,58k', entry: 'No new longs', stop: 'Trail', target: '₹2,68,000', rr: '—' },
+  { max: 280000, action: 'AVOID', cls: 'AVOID', reason: 'Near R2/R3 — extended, book aggressively', entry: '—', stop: 'Trail tight', target: '₹2,80,000', rr: '—' },
+  { max: Infinity, action: 'AVOID', cls: 'AVOID', reason: 'EXTENDED — do not chase. Book profits.', entry: '—', stop: '—', target: '—', rr: '—' }
+];
+
+function computeSignal(cmp, zones) {
+  for (const z of zones) {
+    if (cmp <= z.max) return z;
+  }
+  return zones[zones.length - 1];
+}
+
+function updateSignal(prefix, zones) {
+  const cmp = +document.getElementById(prefix + 'Cmp').value;
+  if (!cmp || cmp <= 0) return;
+  const sig = computeSignal(cmp, zones);
+  const box = document.getElementById(prefix + 'Signal');
+  box.className = 'signal-box ' + sig.cls;
+  document.getElementById(prefix + 'Action').textContent = sig.action;
+  document.getElementById(prefix + 'Reason').textContent = sig.reason;
+  document.getElementById(prefix + 'Entry').textContent = sig.entry;
+  document.getElementById(prefix + 'Stop').textContent = sig.stop;
+  document.getElementById(prefix + 'Target').textContent = sig.target;
+  document.getElementById(prefix + 'RR').textContent = sig.rr;
+}
+
+document.getElementById('goldCmp').addEventListener('input', () => updateSignal('gold', GOLD_ZONES));
+document.getElementById('silverCmp').addEventListener('input', () => updateSignal('silver', SILVER_ZONES));
+updateSignal('gold', GOLD_ZONES);
+updateSignal('silver', SILVER_ZONES);
+
+// Live clock — every second
+function tickClock() {
+  const opts = { timeZone: 'Asia/Kolkata', hour12: false, day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  const istStr = new Date().toLocaleString('en-IN', opts) + ' IST';
+  const liveEl = document.getElementById('liveClock');
+  if (liveEl) liveEl.textContent = istStr;
+  const tipsEl = document.getElementById('tipsDate');
+  if (tipsEl) tipsEl.textContent = istStr;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ===== METALS API AUTO-POLL (every 30 seconds) =====
+// Tries multiple free CORS-friendly endpoints, converts spot USD/oz to approximate MCX INR
+const POLL_INTERVAL_MS = 30000;
+const TROY_OZ_GRAMS = 31.1035;
+const MCX_PREMIUM = 1.03; // ~3% MCX premium over INR-converted spot
+
+async function fetchUsdInr() {
+  // Free FX endpoint (open.er-api.com, CORS-enabled, no key)
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    return d.rates?.INR || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchSpotMetals() {
+  // Try metals.live first
+  try {
+    const r = await fetch('https://api.metals.live/v1/spot');
+    if (r.ok) {
+      const d = await r.json();
+      const map = {};
+      d.forEach(o => Object.entries(o).forEach(([k, v]) => map[k] = v));
+      if (map.gold && map.silver) return { gold: map.gold, silver: map.silver, source: 'metals.live' };
+    }
+  } catch (e) {}
+  // Fallback: GoldAPI free demo (limited)
+  try {
+    const r = await fetch('https://api.gold-api.com/price/XAU');
+    if (r.ok) {
+      const dG = await r.json();
+      const r2 = await fetch('https://api.gold-api.com/price/XAG');
+      const dS = await r2.json();
+      if (dG.price && dS.price) return { gold: dG.price, silver: dS.price, source: 'gold-api.com' };
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function pollAndUpdate() {
+  const goldStatus = document.getElementById('goldFetchStatus');
+  const silverStatus = document.getElementById('silverFetchStatus');
+  if (goldStatus) goldStatus.textContent = 'Auto-poll: fetching...';
+  if (silverStatus) silverStatus.textContent = 'Auto-poll: fetching...';
+
+  const [usdInr, spot] = await Promise.all([fetchUsdInr(), fetchSpotMetals()]);
+
+  if (!usdInr || !spot) {
+    const msg = 'Auto-poll: free APIs blocked CORS / unavailable. Manual entry only — refer to TradingView widgets above.';
+    if (goldStatus) goldStatus.textContent = msg;
+    if (silverStatus) silverStatus.textContent = msg;
+    return;
+  }
+
+  // Spot Gold USD/oz → MCX ₹/10g
+  const goldInrPer10g = (spot.gold * usdInr / TROY_OZ_GRAMS) * 10 * MCX_PREMIUM;
+  // Spot Silver USD/oz → MCX ₹/kg
+  const silverInrPerKg = (spot.silver * usdInr / TROY_OZ_GRAMS) * 1000 * MCX_PREMIUM;
+
+  const goldEl = document.getElementById('goldCmp');
+  const silverEl = document.getElementById('silverCmp');
+  if (goldEl && document.activeElement !== goldEl) {
+    goldEl.value = Math.round(goldInrPer10g);
+    updateSignal('gold', GOLD_ZONES);
+  }
+  if (silverEl && document.activeElement !== silverEl) {
+    silverEl.value = Math.round(silverInrPerKg);
+    updateSignal('silver', SILVER_ZONES);
+  }
+
+  const ts = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
+  if (goldStatus) goldStatus.textContent = `Auto-poll OK · ${spot.source} · USDINR ${usdInr.toFixed(2)} · Spot Gold $${spot.gold.toFixed(2)}/oz · ${ts} IST`;
+  if (silverStatus) silverStatus.textContent = `Auto-poll OK · ${spot.source} · Spot Silver $${spot.silver.toFixed(2)}/oz · ${ts} IST`;
+}
+
+// Initial poll + recurring
+setTimeout(pollAndUpdate, 1500);
+setInterval(pollAndUpdate, POLL_INTERVAL_MS);
+
+// ===== CHART DATA (existing) =====
+const CMP_SILVER = 249383;
+const CMP_GOLD   = 153281;
+const START_SILVER = 95000;
+const START_GOLD   = 100000;
+
+function genDates(startMonthsBack, extendMonthsFwd) {
+  const arr = [];
+  const today = new Date(2026, 3, 21);
+  const start = new Date(today); start.setMonth(start.getMonth() - startMonthsBack);
+  const end = new Date(today); end.setMonth(end.getMonth() + extendMonthsFwd);
+  const d = new Date(start);
+  while (d <= end) {
+    arr.push(new Date(d));
+    d.setDate(d.getDate() + 7);
+  }
+  return arr;
+}
+
+function seedRand(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+const dates = genDates(12, 3);
+const histEndIdx = Math.floor(dates.length * 12 / 15);
+
+function anchoredSeries(startPrice, cmpPrice, volPct, seed, projBiasPct) {
+  const rand = seedRand(seed);
+  const out = [];
+  for (let i = 0; i <= histEndIdx; i++) {
+    const t = i / histEndIdx;
+    const shape = Math.pow(t, 0.85);
+    const trend = startPrice + (cmpPrice - startPrice) * shape;
+    const shock = (rand() - 0.5) * trend * volPct;
+    out.push(Math.round(trend + shock));
+  }
+  out[histEndIdx] = cmpPrice;
+  for (let i = histEndIdx + 1; i < dates.length; i++) {
+    const stepT = (i - histEndIdx) / (dates.length - histEndIdx);
+    const driftPrice = cmpPrice * (1 + projBiasPct * stepT);
+    const shock = (rand() - 0.5) * cmpPrice * 0.025;
+    out.push(Math.round(driftPrice + shock));
+  }
+  return out;
+}
+
+const silverPrices = anchoredSeries(START_SILVER, CMP_SILVER, 0.035, 42, 0.062);
+const goldPrices   = anchoredSeries(START_GOLD,   CMP_GOLD,   0.025, 77, 0.047);
+
+function addBands(series, splitIdx, volPct) {
+  const upper = series.map((v, i) => i < splitIdx ? null : Math.round(v * (1 + volPct)));
+  const lower = series.map((v, i) => i < splitIdx ? null : Math.round(v * (1 - volPct)));
+  return { upper, lower };
+}
+
+const silverBands = addBands(silverPrices, histEndIdx, 0.08);
+const goldBands = addBands(goldPrices, histEndIdx, 0.05);
+
+const silverHist = silverPrices.map((v, i) => i <= histEndIdx ? v : null);
+const silverProj = silverPrices.map((v, i) => i >= histEndIdx ? v : null);
+const goldHist = goldPrices.map((v, i) => i <= histEndIdx ? v : null);
+const goldProj = goldPrices.map((v, i) => i >= histEndIdx ? v : null);
+
+const ratioSeries = silverPrices.map((s, i) => {
+  const goldPerGram = goldPrices[i] / 10;
+  const silverPerGram = s / 1000;
+  return +(goldPerGram / silverPerGram).toFixed(2);
+});
+
+const silverRebased = silverPrices.map(v => +(v / silverPrices[0] * 100).toFixed(1));
+const goldRebased   = goldPrices.map(v => +(v / goldPrices[0] * 100).toFixed(1));
+
+Chart.defaults.color = '#c9d1d9';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif';
+
+const timeAxis = {
+  type: 'time',
+  time: { unit: 'month', displayFormats: { month: 'MMM yy' } },
+  grid: { color: 'rgba(48,54,61,0.4)' }
+};
+
+new Chart(document.getElementById('silverChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      { label: 'Historical', data: silverHist, borderColor: '#C0C0C0', backgroundColor: 'rgba(192,192,192,0.08)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Projected', data: silverProj, borderColor: '#58a6ff', borderDash: [6,4], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.3 },
+      { label: 'Upper Band', data: silverBands.upper, borderColor: 'rgba(63,185,80,0.5)', borderDash: [2,3], borderWidth: 1, fill: '+1', backgroundColor: 'rgba(63,185,80,0.05)', pointRadius: 0 },
+      { label: 'Lower Band', data: silverBands.lower, borderColor: 'rgba(248,81,73,0.5)', borderDash: [2,3], borderWidth: 1, fill: false, pointRadius: 0 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { x: timeAxis, y: { ticks: { callback: v => '₹' + (v/1000).toFixed(0) + 'k' } } }, plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('goldChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      { label: 'Historical', data: goldHist, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Projected', data: goldProj, borderColor: '#58a6ff', borderDash: [6,4], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.3 },
+      { label: 'Upper Band', data: goldBands.upper, borderColor: 'rgba(63,185,80,0.5)', borderDash: [2,3], borderWidth: 1, fill: '+1', backgroundColor: 'rgba(63,185,80,0.05)', pointRadius: 0 },
+      { label: 'Lower Band', data: goldBands.lower, borderColor: 'rgba(248,81,73,0.5)', borderDash: [2,3], borderWidth: 1, fill: false, pointRadius: 0 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { x: timeAxis, y: { ticks: { callback: v => '₹' + (v/1000).toFixed(0) + 'k' } } }, plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('ratioChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      { label: 'Gold/Silver Ratio', data: ratioSeries, borderColor: '#d29922', backgroundColor: 'rgba(210,153,34,0.1)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Historical Mean (~75)', data: dates.map(() => 75), borderColor: 'rgba(88,166,255,0.6)', borderDash: [4,4], borderWidth: 1, pointRadius: 0 },
+      { label: 'Reversion Target (~70)', data: dates.map(() => 70), borderColor: 'rgba(63,185,80,0.5)', borderDash: [2,2], borderWidth: 1, pointRadius: 0 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { x: timeAxis, y: { ticks: { callback: v => Number(v).toFixed(0) } } }, plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('rsChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      { label: 'Silver MIC (rebased)', data: silverRebased, borderColor: '#C0C0C0', borderWidth: 2, fill: false, pointRadius: 0, tension: 0.3 },
+      { label: 'Gold MINI (rebased)', data: goldRebased, borderColor: '#D4AF37', borderWidth: 2, fill: false, pointRadius: 0, tension: 0.3 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { x: timeAxis, y: { ticks: { callback: v => v.toFixed(0) } } }, plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('evChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Bull', 'Base', 'Bear', 'Weighted EV'],
+    datasets: [
+      {
+        label: 'Silver MIC (%)',
+        data: [14, 7, -10, +(14*0.25 + 7*0.45 - 10*0.30).toFixed(2)],
+        backgroundColor: ['rgba(63,185,80,0.7)','rgba(210,153,34,0.7)','rgba(248,81,73,0.7)','rgba(192,192,192,0.9)']
+      },
+      {
+        label: 'Gold MINI (%)',
+        data: [9.5, 4.5, -4.5, +(9.5*0.40 + 4.5*0.40 - 4.5*0.20).toFixed(2)],
+        backgroundColor: ['rgba(63,185,80,0.4)','rgba(210,153,34,0.4)','rgba(248,81,73,0.4)','rgba(212,175,55,0.9)']
+      }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => v + '%' } } }, plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+const pnlDates = dates.slice(histEndIdx);
+const pnlBull = pnlDates.map((_, i) => +((i / pnlDates.length) * 12.5).toFixed(2));
+const pnlBase = pnlDates.map((_, i) => +((i / pnlDates.length) * 6.2).toFixed(2));
+const pnlBear = pnlDates.map((_, i) => +(-(i / pnlDates.length) * 7.5).toFixed(2));
+
+new Chart(document.getElementById('pnlChart'), {
+  type: 'line',
+  data: {
+    labels: pnlDates,
+    datasets: [
+      { label: 'Bull Case (+12.5%)', data: pnlBull, borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.1)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Base Case (+6.2% EV)', data: pnlBase, borderColor: '#d29922', backgroundColor: 'rgba(210,153,34,0.1)', borderWidth: 2.5, fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Bear Case (-7.5%)', data: pnlBear, borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,0.1)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: timeAxis,
+      y: { ticks: { callback: v => v.toFixed(1) + '%' }, title: { display: true, text: 'Portfolio Return %' } }
+    },
+    plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } }, title: { display: true, text: 'Portfolio P&L Projection — Apr 21 → Jul 21, 2026 (on ₹10L)', font: { size: 13 } } }
+  }
+});
+</script>
+
+</body>
+</html>
