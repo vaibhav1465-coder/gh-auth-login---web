@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-05-11T06:55:55Z",
-  "updatedAtIst": "11 May 2026 · 12:25 IST",
+  "updatedAt": "2026-05-11T16:13:23Z",
+  "updatedAtIst": "11 May 2026 · 21:43 IST",
   "session": "evening",
   "headline": "NY-session prep — US data window opening",
-  "goldMiniMcx": 146571,
-  "silverMicMcx": 253030,
-  "goldSpotUsd": 4680.200195,
-  "silverSpotUsd": 80.795998,
+  "goldMiniMcx": 148130,
+  "silverMicMcx": 268977,
+  "goldSpotUsd": 4730.0,
+  "silverSpotUsd": 85.888,
   "usdInr": 94.570211,
-  "ratio": 57.93
+  "ratio": 55.07
 }
