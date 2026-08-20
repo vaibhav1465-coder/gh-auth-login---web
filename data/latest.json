@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-08-20T04:21:09Z",
-  "updatedAtIst": "20 Aug 2026 · 09:51 IST",
-  "session": "morning",
-  "headline": "Morning open prep — overnight COMEX action",
-  "goldMiniMcx": 142585,
-  "silverMicMcx": 213295,
-  "goldSpotUsd": 4496.700195,
-  "silverSpotUsd": 67.266998,
+  "updatedAt": "2026-08-20T14:05:27Z",
+  "updatedAtIst": "20 Aug 2026 · 19:35 IST",
+  "session": "evening",
+  "headline": "NY-session prep — US data window opening",
+  "goldMiniMcx": 142198,
+  "silverMicMcx": 213517,
+  "goldSpotUsd": 4484.5,
+  "silverSpotUsd": 67.336998,
   "usdInr": 95.752749,
-  "ratio": 66.85
+  "ratio": 66.6
 }
